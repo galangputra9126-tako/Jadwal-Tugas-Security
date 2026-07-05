@@ -1,1 +1,800 @@
-Jadwal Tugas
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generator Jadwal Tugas Security</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+  :root{
+    --navy:#132a3a;
+    --navy-deep:#0c1c27;
+    --amber:#e08e2b;
+    --amber-soft:#f6c877;
+    --paper:#f6f4ee;
+    --card:#ffffff;
+    --line:#dfd9c9;
+    --ink:#1c2a33;
+    --ink-soft:#5b6b74;
+    --danger:#c0392b;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    padding:28px 20px 60px;
+  }
+  h1,h2,h3{font-family:'Poppins',sans-serif;}
+  .wrap{max-width:1180px;margin:0 auto;}
+  .app-header{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin-bottom:24px;
+  }
+  .app-header .badge{
+    width:52px;height:52px;border-radius:14px;
+    background:linear-gradient(155deg,var(--navy),var(--navy-deep));
+    display:flex;align-items:center;justify-content:center;
+    color:var(--amber-soft);font-size:24px;flex-shrink:0;
+    box-shadow:0 6px 16px rgba(19,42,58,.25);
+  }
+  .app-header h1{font-size:22px;margin:0 0 2px;color:var(--navy);}
+  .app-header p{margin:0;color:var(--ink-soft);font-size:13.5px;}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:22px 24px;
+    margin-bottom:20px;
+    box-shadow:0 1px 3px rgba(19,42,58,.05);
+  }
+  .card h2{
+    font-size:15px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--navy);
+    margin:0 0 16px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .card h2::before{
+    content:'';
+    width:5px;height:16px;background:var(--amber);border-radius:3px;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:14px 18px;
+  }
+  label{
+    display:block;font-size:12.5px;font-weight:600;color:var(--ink-soft);
+    margin-bottom:5px;text-transform:uppercase;letter-spacing:.03em;
+  }
+  input[type=text],input[type=month],textarea,select{
+    width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:7px;
+    font-family:'Inter',sans-serif;font-size:14px;background:#fdfcfa;color:var(--ink);
+  }
+  input:focus,textarea:focus,select:focus{outline:2px solid var(--amber-soft);outline-offset:1px;}
+  textarea{resize:vertical;min-height:56px;}
+  .field-full{grid-column:1/-1;}
+
+  .officer-list{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;}
+  .officer-row{
+    display:flex;gap:8px;align-items:center;
+    background:#fbf9f4;border:1px solid var(--line);border-radius:7px;padding:6px 8px;
+  }
+  .officer-row .idx{
+    width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;
+  }
+  .officer-row input{flex:1;border:none;background:transparent;padding:4px 2px;}
+  .officer-row input:focus{outline:none;box-shadow:0 1px 0 var(--amber);}
+  .icon-btn{
+    border:none;background:none;color:var(--danger);cursor:pointer;font-size:16px;
+    width:26px;height:26px;border-radius:6px;flex-shrink:0;
+  }
+  .icon-btn:hover{background:#fbe3e0;}
+
+  .btn{
+    border:none;border-radius:8px;padding:10px 18px;font-size:14px;font-weight:600;
+    cursor:pointer;font-family:'Inter',sans-serif;transition:transform .08s ease, box-shadow .08s ease;
+    display:inline-flex;align-items:center;gap:7px;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:var(--navy);color:#fff;}
+  .btn-primary:hover{background:var(--navy-deep);}
+  .btn-amber{background:var(--amber);color:#2c1c02;}
+  .btn-amber:hover{background:#c97b1e;}
+  .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink);}
+  .btn-ghost:hover{background:#f1ede2;}
+  .btn-sm{padding:7px 12px;font-size:12.5px;}
+  .btn[disabled]{opacity:.45;cursor:not-allowed;}
+
+  .actions-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;}
+
+  .toolbar{
+    display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
+    margin-bottom:16px;
+  }
+  .toolbar .group{display:flex;gap:10px;flex-wrap:wrap;}
+  .hint{
+    font-size:12.5px;color:var(--ink-soft);background:#fbf6e9;border:1px dashed var(--amber-soft);
+    padding:8px 12px;border-radius:7px;margin-bottom:16px;
+  }
+
+  #previewSection{display:none;}
+
+  #printArea{background:#fff;padding:20px;border-radius:8px;}
+  .doc-title{text-align:center;margin-bottom:6px;}
+  .doc-title h2{font-size:19px;margin:2px 0;color:var(--navy);text-transform:uppercase;}
+  .doc-title .periode{
+    text-align:right;font-weight:700;font-size:14px;margin-bottom:6px;color:var(--navy);
+  }
+  .doc-title .periode span{display:block;font-size:15px;}
+
+  table.jadwal{
+    width:100%;border-collapse:collapse;margin-bottom:16px;font-size:12.5px;
+  }
+  table.jadwal th, table.jadwal td{
+    border:1px solid #999;text-align:center;padding:5px 3px;white-space:nowrap;
+  }
+  table.jadwal thead th{background:#eef0ea;font-weight:700;color:var(--navy);}
+  table.jadwal td.namacell{
+    text-align:left;font-weight:700;padding-left:8px;white-space:normal;min-width:110px;
+  }
+  table.jadwal td.harispacer{background:#fbfaf6;}
+  table.jadwal td.cell{
+    font-weight:700;cursor:pointer;user-select:none;min-width:34px;
+  }
+  table.jadwal td.cell:hover{outline:2px solid var(--navy);outline-offset:-2px;}
+  table.jadwal .sunday{color:#c0392b !important;}
+  .status-P{background:#fde7c2;}
+  .status-M{background:#c9e3f7;}
+  .status-OFF{background:#e3e3e3;}
+
+  .legend-foot{
+    display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-top:10px;font-size:13px;
+  }
+  .legend-box p{margin:2px 0;}
+  .legend-box .instr{
+    max-width:520px;font-weight:700;text-align:center;margin:0 auto 14px;
+    font-size:12.5px;line-height:1.5;
+  }
+  .sign-box{text-align:center;min-width:220px;}
+  .sign-box .role{font-weight:700;margin-bottom:60px;}
+  .sign-box .name{font-weight:700;text-decoration:underline;}
+  .jam-box p{margin:2px 0;}
+
+  .edit-name{border:none;background:transparent;font-weight:700;font-size:12.5px;width:100%;font-family:'Inter',sans-serif;}
+  .edit-name:focus{outline:1px solid var(--amber);}
+
+  @media print{
+    body *{visibility:hidden;}
+    #printArea, #printArea *{visibility:visible;}
+    #printArea{position:absolute;top:0;left:0;width:100%;}
+  }
+
+  /* ---- Login Gate ---- */
+  #loginGate{
+    position:fixed;inset:0;z-index:9999;
+    background:linear-gradient(155deg,var(--navy),var(--navy-deep));
+    display:flex;align-items:center;justify-content:center;
+    padding:20px;
+  }
+  .login-card{
+    background:var(--card);
+    border-radius:14px;
+    padding:36px 32px;
+    width:100%;max-width:340px;
+    box-shadow:0 20px 50px rgba(0,0,0,.35);
+    text-align:center;
+  }
+  .login-card .badge{
+    width:52px;height:52px;border-radius:14px;margin:0 auto 14px;
+    background:linear-gradient(155deg,var(--navy),var(--navy-deep));
+    display:flex;align-items:center;justify-content:center;
+    color:var(--amber-soft);font-size:24px;
+  }
+  .login-card h2{
+    font-size:17px;margin:0 0 4px;color:var(--navy);text-transform:none;
+    letter-spacing:0;justify-content:center;
+  }
+  .login-card h2::before{content:none;}
+  .login-card p.sub{margin:0 0 20px;color:var(--ink-soft);font-size:12.5px;}
+  .login-card label{text-align:left;}
+  .login-card .field{margin-bottom:14px;}
+  .login-error{
+    color:var(--danger);font-size:12.5px;font-weight:600;
+    margin:-4px 0 12px;min-height:16px;
+  }
+  .login-card .btn{width:100%;justify-content:center;margin-top:4px;}
+  body.locked{overflow:hidden;}
+  #appRoot{display:none;}
+</style>
+</head>
+<body class="locked">
+
+<div id="loginGate">
+  <div class="login-card">
+    <div class="badge">🛡️</div>
+    <h2>Generator Jadwal Tugas Security</h2>
+    <p class="sub">Masukkan username &amp; password untuk melanjutkan.</p>
+    <form id="loginForm" onsubmit="return handleLogin(event)">
+      <div class="field">
+        <label>Username</label>
+        <input type="text" id="loginUser" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="loginPass" autocomplete="current-password" required>
+      </div>
+      <div class="login-error" id="loginError"></div>
+      <button type="submit" class="btn btn-primary">🔒 Masuk</button>
+    </form>
+  </div>
+</div>
+
+<div id="appRoot">
+<div class="wrap">
+
+  <div class="app-header">
+    <div class="badge">🛡️</div>
+    <div>
+      <h1>Generator Jadwal Tugas Security</h1>
+      <p>Isi data, jadwal terisi otomatis mengikuti pola rotasi shift &mdash; bisa diedit lalu diekspor ke Excel / PDF.</p>
+    </div>
+  </div>
+
+  <div class="card" id="settingsCard">
+    <h2>Data Jadwal</h2>
+    <div class="grid">
+      <div>
+        <label>Nama Yayasan / Instansi</label>
+        <input type="text" id="orgName" value="YAYASAN GLOBAL INDONESIA BERSAMA">
+      </div>
+      <div>
+        <label>Lokasi / Sub Judul</label>
+        <input type="text" id="subTitle" value="MBG BOJONG BARU">
+      </div>
+      <div>
+        <label>Bulan &amp; Tahun Periode</label>
+        <input type="month" id="periodMonth" value="2026-07">
+      </div>
+      <div>
+        <label>Jabatan Pembuat Jadwal</label>
+        <input type="text" id="jabatanPembuat" value="KOORDINATOR SECURITY">
+      </div>
+      <div>
+        <label>Nama Pembuat Jadwal</label>
+        <input type="text" id="namaPembuat" value="BP. SUWARNO">
+      </div>
+      <div>
+        <label>Jam Kerja Pagi (P)</label>
+        <input type="text" id="jamPagi" value="06:00 ~ 14:00">
+      </div>
+      <div>
+        <label>Jam Kerja Sore</label>
+        <input type="text" id="jamSore" value="14:00 ~ 22:00">
+      </div>
+      <div>
+        <label>Jam Kerja Malam (M)</label>
+        <input type="text" id="jamMalam" value="22:00 ~ 06:00">
+      </div>
+      <div>
+        <label>Pola Shift Petugas Pertama</label>
+        <input type="text" id="startPattern" value="P,M,M,OFF,OFF,P">
+      </div>
+    </div>
+
+    <div class="field-full" style="margin-top:16px;">
+      <label>Daftar Nama Petugas (petugas berikutnya otomatis mengikuti rotasi dari petugas di atasnya)</label>
+      <div class="officer-list" id="officerList"></div>
+      <button class="btn btn-ghost btn-sm" onclick="addOfficer()">+ Tambah Petugas</button>
+    </div>
+
+    <div class="field-full" style="margin-top:16px;">
+      <label>Catatan Kaki (instruksi tukar shift, dsb)</label>
+      <textarea id="footerNote">UNTUK PETUGAS YANG TUKAR SHIFT WAJIB KOORDINASI DENGAN ATASANNYA
+BP. WARNO DAN ASLAP (BP. RIZKY)</textarea>
+    </div>
+
+    <div class="hint">
+      Rotasi otomatis: petugas pertama memakai pola di atas (berulang sesuai jumlah elemen yang diisi, default 6 hari), tiap petugas berikutnya bergeser satu tingkat (P → OFF → M → P) dari petugas sebelumnya pada hari yang sama &mdash; persis seperti rumus pada file Excel referensi Anda.
+    </div>
+
+    <div class="actions-row">
+      <button class="btn btn-primary" onclick="generateSchedule()">⚙️ Buat / Perbarui Jadwal</button>
+    </div>
+  </div>
+
+  <div id="previewSection">
+    <div class="toolbar">
+      <div class="group">
+        <button class="btn btn-ghost btn-sm" onclick="scrollToSettings()">✏️ Ubah Data</button>
+        <button class="btn btn-ghost btn-sm" onclick="generateSchedule(true)">↺ Reset Jadwal (hapus edit manual)</button>
+      </div>
+      <div class="group">
+        <button class="btn btn-amber" onclick="exportExcel()">⬇️ Export Excel</button>
+        <button class="btn btn-primary" onclick="exportPDF()">⬇️ Export PDF</button>
+      </div>
+    </div>
+    <div class="hint">Klik langsung pada sel shift (P / M / OFF) untuk mengubahnya secara manual. Nama petugas juga bisa diklik dan diedit langsung di tabel.</div>
+
+    <div class="card" id="printAreaCard">
+      <div id="printArea"></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+const AUTH_USER = 'suwarno';
+const AUTH_PASS = 'galang123';
+
+function handleLogin(e){
+  e.preventDefault();
+  const u = document.getElementById('loginUser').value.trim().toLowerCase();
+  const p = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginError');
+  if(u === AUTH_USER && p === AUTH_PASS){
+    errEl.textContent = '';
+    document.getElementById('loginGate').style.display = 'none';
+    document.getElementById('appRoot').style.display = 'block';
+    document.body.classList.remove('locked');
+    sessionStorage.setItem('jadwalAuthed', '1');
+  } else {
+    errEl.textContent = 'Username atau password salah.';
+    document.getElementById('loginPass').value = '';
+  }
+  return false;
+}
+
+// keep unlocked for the rest of this browser tab session (re-locks on new tab/window)
+if(sessionStorage.getItem('jadwalAuthed') === '1'){
+  document.getElementById('loginGate').style.display = 'none';
+  document.getElementById('appRoot').style.display = 'block';
+  document.body.classList.remove('locked');
+}
+
+const DAY_ABBR = ['MG','SN','SL','RB','KM','JUM','SB']; // index = Date.getDay()
+const CYCLE = ['P','OFF','M']; // nextStatus(x) = CYCLE[(indexOf(x)+1)%3]
+const ROW_COLORS = ['FDE7C2','C9E3F7','D9F2D9','F2D9E6','E0D9F2','FCE4D6','D9F2F2','F2E6D9'];
+const BLOCK_SIZE = 16;
+
+let state = null; // {year, month(1-12), days, officers:[names], overrides:{'i-d':status}, base:[...]}
+
+function nextStatus(s){
+  const i = CYCLE.indexOf(s);
+  return CYCLE[(i+1)%3];
+}
+
+function defaultOfficers(){
+  return ['GRAY','YUSUF','SADARILAH'];
+}
+
+function renderOfficerInputs(names){
+  const list = document.getElementById('officerList');
+  list.innerHTML = '';
+  names.forEach((name, idx) => {
+    const row = document.createElement('div');
+    row.className = 'officer-row';
+    row.innerHTML = `
+      <div class="idx">${idx+1}</div>
+      <input type="text" value="${escapeHtml(name)}" data-officer-input>
+      <button class="icon-btn" title="Hapus" onclick="removeOfficer(${idx})">✕</button>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function addOfficer(){
+  const names = getOfficerNamesFromForm();
+  names.push('PETUGAS ' + (names.length+1));
+  renderOfficerInputs(names);
+}
+function removeOfficer(idx){
+  const names = getOfficerNamesFromForm();
+  if(names.length<=1) return;
+  names.splice(idx,1);
+  renderOfficerInputs(names);
+}
+function getOfficerNamesFromForm(){
+  return Array.from(document.querySelectorAll('#officerList [data-officer-input]')).map(i=>i.value.trim()||'PETUGAS');
+}
+function escapeHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+renderOfficerInputs(defaultOfficers());
+
+function scrollToSettings(){
+  document.getElementById('settingsCard').scrollIntoView({behavior:'smooth'});
+}
+
+function generateSchedule(forceReset){
+  const [y,m] = document.getElementById('periodMonth').value.split('-').map(Number);
+  const days = new Date(y, m, 0).getDate();
+  const officers = getOfficerNamesFromForm();
+  const patternRaw = document.getElementById('startPattern').value.split(',').map(s=>s.trim().toUpperCase()).filter(Boolean);
+  const pattern = patternRaw.length ? patternRaw : ['P','M','M','OFF','OFF'];
+
+  const keepOverrides = (state && !forceReset && state.year===y && state.month===m && state.officers.length===officers.length)
+    ? state.overrides : {};
+
+  state = {
+    year:y, month:m, days,
+    officers,
+    pattern,
+    overrides: keepOverrides,
+    org: document.getElementById('orgName').value,
+    sub: document.getElementById('subTitle').value,
+    jabatan: document.getElementById('jabatanPembuat').value,
+    pembuat: document.getElementById('namaPembuat').value,
+    jamPagi: document.getElementById('jamPagi').value,
+    jamSore: document.getElementById('jamSore').value,
+    jamMalam: document.getElementById('jamMalam').value,
+    footerNote: document.getElementById('footerNote').value,
+  };
+  render();
+  document.getElementById('previewSection').style.display = 'block';
+  document.getElementById('previewSection').scrollIntoView({behavior:'smooth'});
+}
+
+// compute full grid: grid[officerIdx][dayIdx] = status, resolves overrides + cascading rotation
+function computeGrid(){
+  const {days, officers, pattern, overrides} = state;
+  const grid = [];
+  for(let i=0;i<officers.length;i++){
+    grid.push(new Array(days));
+  }
+  for(let d=0; d<days; d++){
+    grid[0][d] = overrides['0-'+d] || pattern[d % pattern.length];
+    for(let i=1;i<officers.length;i++){
+      grid[i][d] = overrides[i+'-'+d] || nextStatus(grid[i-1][d]);
+    }
+  }
+  return grid;
+}
+
+function monthNameId(m){
+  const names = ['JANUARI','FEBRUARI','MARET','APRIL','MEI','JUNI','JULI','AGUSTUS','SEPTEMBER','OKTOBER','NOVEMBER','DESEMBER'];
+  return names[m-1];
+}
+
+function render(){
+  const grid = computeGrid();
+  const {year, month, days, officers} = state;
+  const yy = String(year).slice(-2);
+
+  let blocks = [];
+  for(let start=1; start<=days; start+=BLOCK_SIZE){
+    blocks.push({start, end: Math.min(start+BLOCK_SIZE-1, days)});
+  }
+
+  let html = '';
+  html += `<div class="doc-title">
+    <div class="periode"><span>PERIODE:</span>${monthNameId(month)} - ${yy}</div>
+    <h2>JADWAL TUGAS SECURITY</h2>
+    <h2 style="font-size:15px;">${escapeHtml(state.org)}</h2>
+    <h2 style="font-size:14px;">${escapeHtml(state.sub)}</h2>
+  </div>`;
+
+  blocks.forEach(block => {
+    const colCount = block.end - block.start + 1;
+    html += `<table class="jadwal" data-block-start="${block.start}" data-block-end="${block.end}">
+      <thead>
+        <tr>
+          <th rowspan="2">NAMA PETUGAS</th>
+          <th>HARI</th>`;
+    for(let day=block.start; day<=block.end; day++){
+      const dow = new Date(year, month-1, day).getDay();
+      const isSun = dow===0;
+      html += `<th class="${isSun?'sunday':''}">${DAY_ABBR[dow]}</th>`;
+    }
+    html += `</tr><tr><th>TANGGAL</th>`;
+    for(let day=block.start; day<=block.end; day++){
+      const dow = new Date(year, month-1, day).getDay();
+      const isSun = dow===0;
+      html += `<td class="${isSun?'sunday':''}">${day}</td>`;
+    }
+    html += `</tr></thead><tbody>`;
+
+    officers.forEach((name, oi) => {
+      html += `<tr>
+        <td class="namacell"><input class="edit-name" value="${escapeHtml(name)}" data-officer-name="${oi}" onchange="renameOfficer(${oi}, this.value)"></td>
+        <td class="harispacer"></td>`;
+      for(let day=block.start; day<=block.end; day++){
+        const di = day-1;
+        const status = grid[oi][di];
+        const dow = new Date(year, month-1, day).getDay();
+        const isSun = dow===0;
+        html += `<td class="cell status-${status} ${isSun?'sunday':''}" data-officer="${oi}" data-day="${di}" onclick="cycleCell(${oi},${di})">${status}</td>`;
+      }
+      html += `</tr>`;
+    });
+    html += `</tbody></table>`;
+  });
+
+  html += `<div class="legend-box">
+    <p class="instr">${escapeHtml(state.footerNote).replace(/\n/g,'<br>')}</p>
+  </div>`;
+
+  html += `<div class="legend-foot">
+    <div class="jam-box">
+      <p><b>KETERANGAN:</b></p>
+      <p>JAM KERJA PAGI &nbsp;: ${escapeHtml(state.jamPagi)}</p>
+      <p>JAM KERJA SORE &nbsp;: ${escapeHtml(state.jamSore)}</p>
+      <p>JAM KERJA MALAM : ${escapeHtml(state.jamMalam)}</p>
+      <p style="margin-top:10px;"><b>P</b> : PAGI &nbsp;&nbsp; <b>M</b> : MALAM &nbsp;&nbsp; <b>OFF</b> : LIBUR</p>
+    </div>
+    <div class="sign-box">
+      <p class="role">PEMBUAT<br>${escapeHtml(state.jabatan)}</p>
+      <p class="name">${escapeHtml(state.pembuat)}</p>
+    </div>
+  </div>`;
+
+  document.getElementById('printArea').innerHTML = html;
+}
+
+function renameOfficer(idx, val){
+  state.officers[idx] = val.trim() || 'PETUGAS';
+  // keep the corresponding settings input in sync
+  const inputs = document.querySelectorAll('#officerList [data-officer-input]');
+  if(inputs[idx]) inputs[idx].value = state.officers[idx];
+}
+
+function cycleCell(oi, di){
+  const grid = computeGrid();
+  const current = grid[oi][di];
+  const newVal = nextStatus(current);
+  state.overrides[oi+'-'+di] = newVal;
+  render();
+}
+
+// ---------- EXPORT EXCEL ----------
+async function exportExcel(){
+  if(!state){ return; }
+  const grid = computeGrid();
+  const {year, month, days, officers} = state;
+  const yy = String(year).slice(-2);
+
+  const wb = new ExcelJS.Workbook();
+  const sheetName = monthNameId(month).slice(0,3);
+  const ws = wb.addWorksheet(sheetName, {pageSetup:{orientation:'landscape', fitToPage:true, fitToWidth:1, fitToHeight:0}});
+
+  let blocks = [];
+  for(let start=1; start<=days; start+=BLOCK_SIZE){
+    blocks.push({start, end: Math.min(start+BLOCK_SIZE-1, days)});
+  }
+  const maxCols = 2 + Math.max(...blocks.map(b=>b.end-b.start+1));
+
+  const thinBorder = {top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};
+  const centerAlign = {horizontal:'center', vertical:'center'};
+
+  // Title block
+  ws.mergeCells(1,2,3, Math.max(2, maxCols-3));
+  const titleCell = ws.getCell(1,2);
+  titleCell.value = `JADWAL TUGAS SECURITY\n${state.org}\n${state.sub}`;
+  titleCell.font = {name:'Calibri', size:18, bold:true};
+  titleCell.alignment = {horizontal:'center', vertical:'middle', wrapText:true};
+
+  const periodeLabelCell = ws.getCell(1, maxCols-2);
+  ws.mergeCells(1, maxCols-2, 2, maxCols);
+  periodeLabelCell.value = 'PERIODE:';
+  periodeLabelCell.font = {name:'Calibri', size:18, bold:true};
+  periodeLabelCell.alignment = {horizontal:'left', vertical:'middle'};
+
+  const periodeValCell = ws.getCell(3, maxCols-2);
+  ws.mergeCells(3, maxCols-2, 3, maxCols);
+  periodeValCell.value = `${monthNameId(month)} - ${yy}`;
+  periodeValCell.font = {name:'Calibri', size:14, bold:true};
+  periodeValCell.alignment = {horizontal:'left', vertical:'top'};
+
+  let rowCursor = 5;
+  const blockRowInfo = []; // {headerRow, dateRow, firstDataRow, startCol, endCol, startDay}
+
+  blocks.forEach((block, bi) => {
+    const colCount = block.end - block.start + 1;
+    const startCol = 2; // column B
+    const endCol = startCol + 1 + colCount; // +1 for HARI col
+
+    const headerRow = rowCursor;
+    const dateRow = rowCursor+1;
+    ws.getRow(headerRow).height = 18;
+    ws.getRow(dateRow).height = 18;
+
+    // NAMA PETUGAS (merged 2 rows)
+    ws.mergeCells(headerRow, startCol, dateRow, startCol);
+    const namaHeader = ws.getCell(headerRow, startCol);
+    namaHeader.value = 'NAMA PETUGAS';
+    namaHeader.font = {name:'Calibri', size:14, bold:true};
+    namaHeader.alignment = centerAlign;
+    namaHeader.border = thinBorder;
+    ws.getCell(dateRow, startCol).border = thinBorder;
+
+    const hariHeader = ws.getCell(headerRow, startCol+1);
+    hariHeader.value = 'HARI';
+    hariHeader.font = {name:'Calibri', size:14, bold:true};
+    hariHeader.alignment = centerAlign;
+    hariHeader.border = thinBorder;
+
+    const tglHeader = ws.getCell(dateRow, startCol+1);
+    tglHeader.value = 'TANGGAL';
+    tglHeader.font = {name:'Calibri', size:14, bold:true};
+    tglHeader.alignment = centerAlign;
+    tglHeader.border = thinBorder;
+
+    for(let c=0;c<colCount;c++){
+      const day = block.start + c;
+      const col = startCol+2+c;
+      const dow = new Date(year, month-1, day).getDay();
+      const isSun = dow===0;
+      const abbrCell = ws.getCell(headerRow, col);
+      abbrCell.value = DAY_ABBR[dow];
+      abbrCell.font = {name:'Calibri', size:14, bold:true, color: isSun?{argb:'FFFF0000'}:undefined};
+      abbrCell.alignment = centerAlign;
+      abbrCell.border = thinBorder;
+
+      const dateCell = ws.getCell(dateRow, col);
+      if(bi===0 && c===0){
+        dateCell.value = day; // literal seed
+      } else if(c===0){
+        // first cell of subsequent block references last date cell of previous block
+        const prevInfo = blockRowInfo[bi-1];
+        const prevLastColLetter = ws.getColumn(prevInfo.endDataCol).letter;
+        dateCell.value = {formula:`${prevLastColLetter}${prevInfo.dateRow}+1`};
+      } else {
+        const prevColLetter = ws.getColumn(col-1).letter;
+        dateCell.value = {formula:`${prevColLetter}${dateRow}+1`};
+      }
+      dateCell.font = {name:'Calibri', size:14, bold:true, color: isSun?{argb:'FFFF0000'}:undefined};
+      dateCell.alignment = centerAlign;
+      dateCell.border = thinBorder;
+    }
+
+    const firstDataRow = dateRow+1;
+    officers.forEach((name, oi) => {
+      const r = firstDataRow+oi;
+      ws.getRow(r).height = 18;
+      const nameCell = ws.getCell(r, startCol);
+      if(oi===0){
+        nameCell.value = name;
+      } else {
+        nameCell.value = {formula:`${ws.getColumn(startCol).letter}${firstDataRow}`};
+        nameCell.value = name; // keep literal name too (simpler, always correct even if edited)
+      }
+      nameCell.font = {name:'Calibri', size:14, bold:true};
+      nameCell.alignment = centerAlign;
+      nameCell.border = thinBorder;
+      const fillColor = ROW_COLORS[oi % ROW_COLORS.length];
+      nameCell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF'+fillColor}};
+
+      const spacer = ws.getCell(r, startCol+1);
+      spacer.border = thinBorder;
+      spacer.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF'+fillColor}};
+
+      for(let c=0;c<colCount;c++){
+        const day = block.start + c;
+        const col = startCol+2+c;
+        const di = day-1;
+        const dow = new Date(year, month-1, day).getDay();
+        const isSun = dow===0;
+        const cell = ws.getCell(r, col);
+        const overrideKey = oi+'-'+di;
+        const isOverride = Object.prototype.hasOwnProperty.call(state.overrides, overrideKey);
+
+        if(oi===0 || isOverride){
+          cell.value = grid[oi][di];
+        } else {
+          const aboveColLetter = ws.getColumn(col).letter;
+          const aboveRow = r-1;
+          cell.value = {formula:`IF(${aboveColLetter}${aboveRow}="OFF","M",IF(${aboveColLetter}${aboveRow}="P","OFF",IF(${aboveColLetter}${aboveRow}="M","P")))`};
+        }
+        cell.font = {name:'Calibri', size:14, bold:true, color:isSun?{argb:'FFFF0000'}:undefined};
+        cell.alignment = centerAlign;
+        cell.border = thinBorder;
+        cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF'+fillColor}};
+      }
+    });
+
+    blockRowInfo.push({headerRow, dateRow, firstDataRow, startCol, endDataCol: startCol+1+colCount, startDay:block.start});
+    rowCursor = firstDataRow + officers.length + 2;
+  });
+
+  // Keterangan
+  let r = rowCursor;
+  ws.getRow(r).height = 18;
+  ws.getCell(r,2).value = 'KETERANGAN:';
+  ws.getCell(r,2).font = {name:'Calibri', size:14, bold:true};
+  r++;
+  const jamRows = [['JAM KERJA PAGI', state.jamPagi],['JAM KERJA SORE', state.jamSore],['JAM KERJA MALAM', state.jamMalam]];
+  jamRows.forEach(([label,val])=>{
+    ws.getRow(r).height = 18;
+    ws.getCell(r,3).value = label;
+    ws.getCell(r,3).font = {name:'Calibri', size:14, bold:true};
+    ws.getCell(r,7).value = ':';
+    ws.getCell(r,7).font = {name:'Calibri', size:14, bold:true};
+    ws.getCell(r,7).alignment = centerAlign;
+    ws.getCell(r,8).value = val;
+    ws.getCell(r,8).font = {name:'Calibri', size:14, bold:true};
+    r++;
+  });
+  r+=1;
+  ws.mergeCells(r,2,r+1,Math.max(2,maxCols-4));
+  const noteCell = ws.getCell(r,2);
+  noteCell.value = state.footerNote;
+  noteCell.font = {name:'Calibri', size:14, bold:true};
+  noteCell.alignment = {horizontal:'center', vertical:'middle', wrapText:true};
+  r+=3;
+
+  ws.getRow(r).height = 18;
+  ws.getCell(r,maxCols-3).value = 'PEMBUAT';
+  ws.getCell(r,maxCols-3).font = {name:'Calibri', size:14, bold:true};
+  r++;
+  ws.getRow(r).height = 18;
+  ws.getCell(r,maxCols-3).value = state.jabatan;
+  ws.getCell(r,maxCols-3).font = {name:'Calibri', size:14, bold:true};
+  r+=1;
+  ws.getRow(r).height = 18;
+  ws.getCell(r,1).value='P'; ws.getCell(r,1).font={name:'Calibri',size:14,bold:true};
+  ws.getCell(r,2).value=': PAGI'; ws.getCell(r,2).font={name:'Calibri',size:14,bold:true};
+  r++;
+  ws.getRow(r).height = 18;
+  ws.getCell(r,1).value='M'; ws.getCell(r,1).font={name:'Calibri',size:14,bold:true};
+  ws.getCell(r,2).value=': MALAM'; ws.getCell(r,2).font={name:'Calibri',size:14,bold:true};
+  r++;
+  ws.getRow(r).height = 18;
+  ws.getCell(r,1).value='OFF'; ws.getCell(r,1).font={name:'Calibri',size:14,bold:true};
+  ws.getCell(r,2).value=': LIBUR'; ws.getCell(r,2).font={name:'Calibri',size:14,bold:true};
+  ws.mergeCells(r,maxCols-3,r,maxCols);
+  ws.getCell(r,maxCols-3).value = state.pembuat;
+  ws.getCell(r,maxCols-3).font = {name:'Calibri', size:14, bold:true, underline:true};
+  ws.getCell(r,maxCols-3).alignment = {horizontal:'center'};
+
+  ws.getColumn(1).width = 3;
+  ws.getColumn(2).width = 18;
+  ws.getColumn(3).width = 12;
+  for(let c=4;c<=maxCols;c++){ ws.getColumn(c).width = 6; }
+
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Jadwal_Tugas_Security_${monthNameId(month)}_${state.year}.xlsx`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ---------- EXPORT PDF ----------
+function exportPDF(){
+  if(!state){ return; }
+  const el = document.getElementById('printArea');
+  window.scrollTo(0,0);
+  const opt = {
+    margin: 8,
+    filename: `Jadwal_Tugas_Security_${monthNameId(state.month)}_${state.year}.pdf`,
+    image: {type:'jpeg', quality:0.98},
+    html2canvas: {
+      scale:2,
+      useCORS:true,
+      scrollX:0,
+      scrollY:0,
+      windowWidth: document.documentElement.scrollWidth,
+      windowHeight: document.documentElement.scrollHeight
+    },
+    jsPDF: {unit:'pt', format:'a4', orientation:'landscape'}
+  };
+  html2pdf().set(opt).from(el).save();
+}
+</script>
+</body>
+</html>
